@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -151,7 +150,6 @@ func ConnectGrpc(host, userID, token, grpcAddr, grpcPort, grpcToken, codes any) 
 		grpcToken,
 		codes,
 	)
-	log.Println(uri)
 	b, err := httpClientGet(uri)
 	if err != nil {
 		return err

@@ -2,10 +2,36 @@ package tradingdata
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"log"
+	"math/big"
 	"strings"
 	"testing"
+)
+
+const (
+	alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+	host     = ""
+	userID   = ""
+	gentoken = ""
+	grpcAddr = ""
+	grpcPort = ""
+)
+
+var (
+	grpcToken string
+	gencodes  = []string{
+		"al-BTCUSDT",
+		"al-ETHUSDT",
+		"al-GOLD",
+		"al-Silver",
+		// "al-AAPL.US",
+	}
+	genheartbeatTimeout int = 60
+	gencheckInterval    int = 30
+	genklineChanSize    int = 1000
+	genobChanSize       int = 1000
 )
 
 func TestClient_HistoryKline(t *testing.T) {
@@ -72,4 +98,16 @@ func gmd5(text string) string {
 	hash.Write([]byte(text))
 	md5Hash := hash.Sum(nil)
 	return hex.EncodeToString(md5Hash)
+}
+
+func generateRandomSecret(length int) (string, error) {
+	result := make([]byte, length)
+	for i := 0; i < length; i++ {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphabet))))
+		if err != nil {
+			return "", err
+		}
+		result[i] = alphabet[num.Int64()]
+	}
+	return string(result), nil
 }

@@ -11,49 +11,50 @@ service Service {
 
 // K线
 message Kline {
-    string plat                 = 1; // 交易产品平台代码
-    string code                 = 2; // 交易产品代码
-    double real_price           = 3; // 真实价格
-    double ctrl_price           = 4; // 控盘价格
-    double total_offset         = 5; // 总偏移量
-    double cur_offset           = 6; // 当前偏移量
-    repeated KlineData data = 7; // 不同周期k线 1m 5m 15m 30m 1h 4h D W M
-    int64 rdtime = 8;
-	int64 sdtime = 9;
-	int64 rstime = 10;
-	int64 sstime = 11;
-    int64 wctime = 12;
+    uint64 seq              = 1; // 递增序列
+    string plat             = 2; // 交易产品平台代码
+    string code             = 3; // 交易产品代码
+    double real_price       = 4; // 真实价格
+    double ctrl_price       = 5; // 控盘价格
+    double total_offset     = 6; // 总偏移量
+    double cur_offset       = 7; // 当前偏移量
+    repeated KlineData data = 8; // k线周期 [1m 5m 15m 30m 1h 4h D W M]
+    int64 rdtime = 9;
+	int64 sdtime = 10;
+	int64 rstime = 11;
+	int64 sstime = 12;
+    int64 wctime = 13;
 }
 
 message KlineData {
     string interval = 1; // 周期
     int64  time     = 2; // K线时间
-    double open     = 3;
-    double close    = 4;
-    double high     = 5;
-    double low      = 6;
-    double volume   = 7;
-    double turnover = 8;
+    double open     = 3; // 开盘价格
+    double close    = 4; // 收盘价格
+    double high     = 5; // 最高价格
+    double low      = 6; // 最低价格
+    double volume   = 7; // 交易量
+    double turnover = 8; // 交易额
 }
 
 // 盘口
-
 message OrderBookLevel {
-    double price  = 1;
-    double volume = 2;
+    double price  = 1; // 挂盘价格
+    double volume = 2; // 挂盘量
 }
 
 message OrderBook {
-    string plat = 1;
-    string code = 2;
-    int64  time = 3; // 毫秒
-    repeated OrderBookLevel bids = 4;
-    repeated OrderBookLevel asks = 5;
-    int64 rdtime = 6;
-	int64 sdtime = 7;
-	int64 rstime = 8;
-	int64 sstime = 9;
-    int64 wctime = 10;
+    uint64 seq  = 1; // 递增序列
+    string plat = 2; // 交易产品平台代码
+    string code = 3; // 交易产品代码
+    int64  time = 4; // 毫秒
+    repeated OrderBookLevel bids = 5; // 买盘
+    repeated OrderBookLevel asks = 6; // 卖盘
+    int64 rdtime = 7;
+	int64 sdtime = 8;
+	int64 rstime = 9;
+	int64 sstime = 10;
+    int64 wctime = 11;
 }
 
 // 下发请求
@@ -71,5 +72,3 @@ message HeartbeatRequest {
 message HeartbeatResponse {
     int64 server_time = 1; // 服务端应答时间戳 秒单位
 }
-
-// protoc --go_out=. --go-grpc_out=. grpc.proto

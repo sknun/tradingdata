@@ -18,7 +18,7 @@ type Client struct {
 	Token            string // 用户token
 	GrpcAddr         string // 接收实时数据的grpc地址
 	GrpcPort         string // 接收实时数据的grpc端口
-	GrpcToken        string // 接收实时数据的grpc地址
+	GrpcToken        string // 接收实时数据时验证的token
 	Codes            string // 请求实时数据的产品列表,使用半角逗号分割(平台-产品标识)
 	HeartbeatTimeout int    // 心跳超时时间(秒) 必须是检查的两倍时间以上
 	CheckInterval    int    // 检查的频率(秒)

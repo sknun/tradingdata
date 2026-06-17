@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/sknun/tradingdata/internal/grpcproto"
+	"github.com/sknun/tradingdata/pkg/grpcproto"
 )
 
 type Client struct {

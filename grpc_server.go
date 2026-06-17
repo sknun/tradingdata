@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/sknun/tradingdata/internal/api"
-	"github.com/sknun/tradingdata/internal/grpcproto"
+	"github.com/sknun/tradingdata/pkg/grpcproto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

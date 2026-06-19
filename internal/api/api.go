@@ -7,39 +7,15 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/sknun/tradingdata/pkg/klinestruct"
 )
-
-type KlineData struct {
-	Time     int64   `json:"time"`     // K线时间
-	Open     float64 `json:"open"`     // 开盘价
-	Close    float64 `json:"close"`    // 收盘价
-	High     float64 `json:"high"`     // 最高价
-	Low      float64 `json:"low"`      // 最低价
-	Volume   float64 `json:"volume"`   // 成交量
-	Turnover float64 `json:"turnover"` // 成交额
-}
-
-type KlineBatchResponse struct {
-	// 平台
-	Platform string `json:"platform"`
-	// 产品名
-	Code string `json:"code"`
-	// K线列表
-	List []KlineData `json:"list"`
-}
-
-type KlineResponse struct {
-	// 下次取历史k线的时间戳
-	NextTimestamp int64 `json:"next_timestamp"`
-	// K线列表
-	List []KlineData `json:"list"`
-}
 
 type BaseKlineBatchResponse struct {
 	// 返回值 200 成功
 	Code int `json:"code"`
 	// 返回数据
-	Data *[]KlineBatchResponse `json:"data,omitempty"`
+	Data *[]klinestruct.KlineBatchResponse `json:"data,omitempty"`
 	// 返回消息
 	Message string `json:"message,omitempty"`
 	// 返回错误消息 如果为空参考返回消息
@@ -50,7 +26,7 @@ type BaseKlineResponse struct {
 	// 返回值 200 成功
 	Code int `json:"code"`
 	// 返回数据
-	Data *KlineResponse `json:"data,omitempty"`
+	Data *klinestruct.KlineResponse `json:"data,omitempty"`
 	// 返回消息
 	Message string `json:"message,omitempty"`
 	// 返回错误消息 如果为空参考返回消息
@@ -76,7 +52,7 @@ count 数量
 resolution 颗度
 */
 
-func HistoryKline(host, userID, token, code, kline_timestamp_end, count, resolution any) (*KlineResponse, error) {
+func HistoryKline(host, userID, token, code, kline_timestamp_end, count, resolution any) (*klinestruct.KlineResponse, error) {
 	var tmp BaseKlineResponse
 	if err := checkCodeRes(code, resolution); err != nil {
 		return nil, err
@@ -110,7 +86,7 @@ count 数量
 resolution 颗度
 */
 
-func HistoryKlineBatch(host, userID, token, codes, kline_timestamp_end, count, resolution any) (*[]KlineBatchResponse, error) {
+func HistoryKlineBatch(host, userID, token, codes, kline_timestamp_end, count, resolution any) (*[]klinestruct.KlineBatchResponse, error) {
 	var tmp BaseKlineBatchResponse
 	if err := checkCodeRes(codes, resolution); err != nil {
 		return nil, err

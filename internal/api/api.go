@@ -75,6 +75,9 @@ func HistoryKline(host, userID, token, code, kline_timestamp_end, count, resolut
 	if err != nil {
 		return nil, err
 	}
+	if tmp.Code != 200 {
+		return nil, fmt.Errorf("message:%v,error:%v", tmp.Message, tmp.Error)
+	}
 	return tmp.Data, nil
 }
 
@@ -107,6 +110,12 @@ func HistoryKlineBatch(host, userID, token, codes, kline_timestamp_end, count, r
 		return nil, err
 	}
 	err = json.Unmarshal(b, &tmp)
+	if err != nil {
+		return nil, err
+	}
+	if tmp.Code != 200 {
+		return nil, fmt.Errorf("message:%v,error:%v", tmp.Message, tmp.Error)
+	}
 	return tmp.Data, err
 }
 

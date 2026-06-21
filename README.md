@@ -6,7 +6,7 @@
 
 ```go
 // 初始化客户端
-client, err := NewClient(host, userID, token, grpcAddr, grpcPort, grpcToken, codes, heartbeatTimeout, checkInterval, klineChanSize, obChanSize)
+client, err := NewClient(host, userID, token, grpcAddr, grpcPort, grpcToken, symbols, heartbeatTimeout, checkInterval, klineChanSize, obChanSize)
 if err != nil {
     return fmt.Errorf("Client 初始化失败: %w", err)
 }

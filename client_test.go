@@ -20,8 +20,8 @@ const (
 )
 
 var (
-	grpcToken string
-	gencodes  = []string{
+	grpcToken  string
+	gensymbols = []string{
 		"al-BTCUSDT",
 		"al-ETHUSDT",
 		"al-GOLD",
@@ -37,7 +37,7 @@ var (
 func TestClient_HistoryKline(t *testing.T) {
 	tstr, _ := generateRandomSecret(80)
 	grpcToken = gmd5(tstr)
-	client, err := NewClient(host, userID, gentoken, grpcAddr, grpcPort, grpcToken, strings.Join(gencodes, ","), genheartbeatTimeout, gencheckInterval, genklineChanSize, genobChanSize)
+	client, err := NewClient(host, userID, gentoken, grpcAddr, grpcPort, grpcToken, strings.Join(gensymbols, ","), genheartbeatTimeout, gencheckInterval, genklineChanSize, genobChanSize)
 	if err != nil {
 		t.Fatalf("Client 初始化失败: %v", err)
 	}
@@ -53,7 +53,7 @@ func TestClient_HistoryKline(t *testing.T) {
 func TestClient_HistoryKlineBatch(t *testing.T) {
 	tstr, _ := generateRandomSecret(80)
 	grpcToken = gmd5(tstr)
-	client, err := NewClient(host, userID, gentoken, grpcAddr, grpcPort, grpcToken, strings.Join(gencodes, ","), genheartbeatTimeout, gencheckInterval, genklineChanSize, genobChanSize)
+	client, err := NewClient(host, userID, gentoken, grpcAddr, grpcPort, grpcToken, strings.Join(gensymbols, ","), genheartbeatTimeout, gencheckInterval, genklineChanSize, genobChanSize)
 	if err != nil {
 		t.Fatalf("Client 初始化失败: %v", err)
 	}
@@ -69,7 +69,7 @@ func TestClient_HistoryKlineBatch(t *testing.T) {
 func TestClient_Grpc(t *testing.T) {
 	tstr, _ := generateRandomSecret(80)
 	grpcToken = gmd5(tstr)
-	client, err := NewClient(host, userID, gentoken, grpcAddr, grpcPort, grpcToken, strings.Join(gencodes, ","), genheartbeatTimeout, gencheckInterval, genklineChanSize, genobChanSize)
+	client, err := NewClient(host, userID, gentoken, grpcAddr, grpcPort, grpcToken, strings.Join(gensymbols, ","), genheartbeatTimeout, gencheckInterval, genklineChanSize, genobChanSize)
 	if err != nil {
 		t.Fatalf("Client 初始化失败: %v", err)
 	}

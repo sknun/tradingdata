@@ -13,7 +13,7 @@ service Service {
 message Kline {
     uint64 seq              = 1; // 递增序列
     string plat             = 2; // 交易产品平台代码
-    string code             = 3; // 交易产品代码
+    string symbol           = 3; // 交易产品代码
     double real_price       = 4; // 真实价格
     double ctrl_price       = 5; // 控盘价格
     double total_offset     = 6; // 总偏移量
@@ -44,10 +44,10 @@ message OrderBookLevel {
 }
 
 message OrderBook {
-    uint64 seq  = 1; // 递增序列
-    string plat = 2; // 交易产品平台代码
-    string code = 3; // 交易产品代码
-    int64  time = 4; // 毫秒
+    uint64 seq    = 1; // 递增序列
+    string plat   = 2; // 交易产品平台代码
+    string symbol = 3; // 交易产品代码
+    int64  time   = 4; // 毫秒
     repeated OrderBookLevel bids = 5; // 买盘
     repeated OrderBookLevel asks = 6; // 卖盘
     int64 rdtime = 7;

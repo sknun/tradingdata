@@ -61,13 +61,13 @@ func (s *server) PushData(stream grpc.ClientStreamingServer[grpcproto.Request, e
 			select {
 			case klineChan <- x.Kline:
 			default:
-				Logger(fmt.Sprintf("【警告】Kline 通道已满,丢弃当前帧: %s,请合理优化读取消息函数", x.Kline.Code))
+				Logger(fmt.Sprintf("【警告】Kline 通道已满,丢弃当前帧: %s,请合理优化读取消息函数", x.Kline.Symbol))
 			}
 		case *grpcproto.Request_Ob:
 			select {
 			case obChan <- x.Ob:
 			default:
-				Logger(fmt.Sprintf("【警告】Ob 通道已满,丢弃当前帧: %s,请合理优化读取消息函数", x.Ob.Code))
+				Logger(fmt.Sprintf("【警告】Ob 通道已满,丢弃当前帧: %s,请合理优化读取消息函数", x.Ob.Symbol))
 			}
 		default:
 			Logger(fmt.Sprintf("【警告】收到未知payload类型: %T,请通知数据中心排查", x))
@@ -186,7 +186,7 @@ func (c *Client) Run() error {
 
 // 超时触发数据源重接grpc
 func (c *Client) onTimeout() {
-	if err := api.ConnectGrpc(c.Host, c.UserID, c.Token, c.GrpcAddr, c.GrpcPort, c.GrpcToken, c.Codes); err != nil {
+	if err := api.ConnectGrpc(c.Host, c.UserID, c.Token, c.GrpcAddr, c.GrpcPort, c.GrpcToken, c.Symbols); err != nil {
 		Logger(fmt.Sprintf("通知数据源连接 gRPC 失败: %v", err))
 	}
 }

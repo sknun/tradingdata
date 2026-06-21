@@ -46,23 +46,23 @@ type ConnectResponse struct {
 
 /*
 获取历史k线
-code 产品
+symbol 产品
 kline_timestamp_end 截止时间
 count 数量
 resolution 颗度
 */
 
-func HistoryKline(host, userID, token, code, kline_timestamp_end, count, resolution any) (*klinestruct.KlineResponse, error) {
+func HistoryKline(host, userID, token, symbol, kline_timestamp_end, count, resolution any) (*klinestruct.KlineResponse, error) {
 	var tmp BaseKlineResponse
-	if err := checkCodeRes(code, resolution); err != nil {
+	if err := checkSymbolRes(symbol, resolution); err != nil {
 		return nil, err
 	}
 	uri := fmt.Sprintf(
-		"%v/api/kline_history?user_id=%v&token=%v&code=%v&count=%v&resolution=%v&kline_timestamp_end=%v",
+		"%v/api/kline_history?user_id=%v&token=%v&symbol=%v&count=%v&resolution=%v&kline_timestamp_end=%v",
 		host,
 		userID,
 		token,
-		code,
+		symbol,
 		count,
 		resolution,
 		kline_timestamp_end,
@@ -83,23 +83,23 @@ func HistoryKline(host, userID, token, code, kline_timestamp_end, count, resolut
 
 /*
 批量获取历史k线
-codes 产品 多个用","分开
+symbols 产品 多个用","分开
 kline_timestamp_end 截止时间
 count 数量
 resolution 颗度
 */
 
-func HistoryKlineBatch(host, userID, token, codes, kline_timestamp_end, count, resolution any) (*[]klinestruct.KlineBatchResponse, error) {
+func HistoryKlineBatch(host, userID, token, symbols, kline_timestamp_end, count, resolution any) (*[]klinestruct.KlineBatchResponse, error) {
 	var tmp BaseKlineBatchResponse
-	if err := checkCodeRes(codes, resolution); err != nil {
+	if err := checkSymbolRes(symbols, resolution); err != nil {
 		return nil, err
 	}
 	uri := fmt.Sprintf(
-		"%v/api/kline_history_batch?user_id=%v&token=%v&codes=%v&count=%v&resolution=%v&kline_timestamp_end=%v",
+		"%v/api/kline_history_batch?user_id=%v&token=%v&symbols=%v&count=%v&resolution=%v&kline_timestamp_end=%v",
 		host,
 		userID,
 		token,
-		codes,
+		symbols,
 		count,
 		resolution,
 		kline_timestamp_end,
@@ -120,20 +120,20 @@ func HistoryKlineBatch(host, userID, token, codes, kline_timestamp_end, count, r
 }
 
 // 请求数据源链接
-func ConnectGrpc(host, userID, token, grpcAddr, grpcPort, grpcToken, codes any) error {
-	strCode, ok1 := codes.(string)
-	if !ok1 || strings.TrimSpace(strCode) == "" {
+func ConnectGrpc(host, userID, token, grpcAddr, grpcPort, grpcToken, symbols any) error {
+	strSymbols, ok1 := symbols.(string)
+	if !ok1 || strings.TrimSpace(strSymbols) == "" {
 		return errors.New("缺少参数信息或参数类型错误")
 	}
 	uri := fmt.Sprintf(
-		"%v/api/connection_delivery?user_id=%v&token=%v&your_sever=%v:%v&your_token=%v&codes=%v",
+		"%v/api/connection_delivery?user_id=%v&token=%v&your_sever=%v:%v&your_token=%v&symbols=%v",
 		host,
 		userID,
 		token,
 		grpcAddr,
 		grpcPort,
 		grpcToken,
-		codes,
+		symbols,
 	)
 	b, err := httpClientGet(uri)
 	if err != nil {
@@ -150,10 +150,10 @@ func ConnectGrpc(host, userID, token, grpcAddr, grpcPort, grpcToken, codes any) 
 	return nil
 }
 
-func checkCodeRes(code, resolution any) error {
-	strCode, ok1 := code.(string)
+func checkSymbolRes(symbol, resolution any) error {
+	strSymbol, ok1 := symbol.(string)
 	strRes, ok2 := resolution.(string)
-	if !ok1 || !ok2 || strings.TrimSpace(strCode) == "" || strings.TrimSpace(strRes) == "" {
+	if !ok1 || !ok2 || strings.TrimSpace(strSymbol) == "" || strings.TrimSpace(strRes) == "" {
 		return errors.New("缺少参数信息或参数类型错误")
 	}
 	return nil

@@ -14,7 +14,7 @@ type KlineBatchResponse struct {
 	// 平台
 	Platform string `json:"platform"`
 	// 产品名
-	Code string `json:"code"`
+	Symbol string `json:"symbol"`
 	// K线列表
 	List []KlineData `json:"list"`
 }

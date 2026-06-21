@@ -19,7 +19,7 @@ type Client struct {
 	GrpcAddr         string // 接收实时数据的grpc地址
 	GrpcPort         string // 接收实时数据的grpc端口
 	GrpcToken        string // 接收实时数据时验证的token
-	Codes            string // 请求实时数据的产品列表,使用半角逗号分割(平台-产品标识)
+	Symbols          string // 请求实时数据的产品列表,使用半角逗号分割(平台-产品标识)
 	HeartbeatTimeout int    // 心跳超时时间(秒) 必须是检查的两倍时间以上
 	CheckInterval    int    // 检查的频率(秒)
 	KlineChanSize    int    // k线通道缓冲区大小 不建议小于100
@@ -35,7 +35,7 @@ func NewClient(
 	grpcAddr,
 	grpcPort,
 	grpcToken string,
-	codes string,
+	symbols string,
 	heartbeatTimeout,
 	checkInterval,
 	klineChanSize,
@@ -76,11 +76,11 @@ func NewClient(
 		atomic.StoreInt32(&isClientCreated, 0)
 		return nil, fmt.Errorf("grpcAddr 必须是合法的 IPv4/IPv6 地址或域名，当前输入: %s", grpcAddr)
 	}
-	if len(codes) < 1 {
+	if len(symbols) < 1 {
 		atomic.StoreInt32(&isClientCreated, 0)
 		return nil, errors.New("产品列表 不能为空")
 	}
-	if err := checkCodes(codes); err != nil {
+	if err := checkSymbols(symbols); err != nil {
 		atomic.StoreInt32(&isClientCreated, 0)
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func NewClient(
 		GrpcAddr:         grpcAddr,
 		GrpcPort:         grpcPort,
 		GrpcToken:        grpcToken,
-		Codes:            codes,
+		Symbols:          symbols,
 		HeartbeatTimeout: heartbeatTimeout,
 		CheckInterval:    checkInterval,
 		KlineChanSize:    klineChanSize,
@@ -118,23 +118,23 @@ func NewClient(
 	}, nil
 }
 
-func checkCodes(codes string) error {
-	slice := strings.Split(codes, ",")
+func checkSymbols(symbols string) error {
+	slice := strings.Split(symbols, ",")
 	seen := make(map[string]struct{})
 	if len(slice) < 1 {
 		return errors.New("产品列表不能为空")
 	}
 
-	for _, code := range slice {
-		if strings.TrimSpace(code) == "" {
+	for _, symbol := range slice {
+		if strings.TrimSpace(symbol) == "" {
 			return errors.New("产品列表中包含合法的空参数")
 		}
 
-		if _, exists := seen[code]; exists {
-			return errors.New("产品列表中包含重复的数据: " + code)
+		if _, exists := seen[symbol]; exists {
+			return errors.New("产品列表中包含重复的数据: " + symbol)
 		}
 
-		seen[code] = struct{}{}
+		seen[symbol] = struct{}{}
 	}
 
 	return nil

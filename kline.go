@@ -1,0 +1,28 @@
+package tradingdata
+
+import (
+	"github.com/sknun/tradingdata/internal/api"
+	"github.com/sknun/tradingdata/pkg/model"
+)
+
+/*
+获取历史k线
+symbol 产品(平台-产品标识)
+kline_timestamp_end 截止时间 0为取最新数据
+count 数量 1-200之间
+resolution 颗度 1m 5m 15m 30m 1h 4h D W M
+*/
+func (c *Client) HistoryKline(symbol, kline_timestamp_end, count, resolution any) (res *model.KlineResponse, err error) {
+	return api.HistoryKline(c.Host, c.UserID, c.Token, symbol, kline_timestamp_end, count, resolution)
+}
+
+/*
+批量获取历史k线
+symbols 产品(平台-产品标识) 多个用","分开
+kline_timestamp_end 截止时间 0为取最新数据
+count 数量 1-200之间
+resolution 颗度 1m 5m 15m 30m 1h 4h D W M
+*/
+func (c *Client) HistoryKlineBatch(symbols, kline_timestamp_end, count, resolution any) (res *[]model.KlineBatchResponse, err error) {
+	return api.HistoryKlineBatch(c.Host, c.UserID, c.Token, symbols, kline_timestamp_end, count, resolution)
+}

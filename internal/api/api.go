@@ -36,6 +36,13 @@ type BaseKlineResponse struct {
 }
 
 /*
+操作控盘 控盘列表
+*/
+func ControlList(host string, data model.ListRequest) (*model.Response, error) {
+	return doGetRequest(host, "/api/control/list", data)
+}
+
+/*
 操作控盘 偏移量模式
 */
 func ControlOffsetAdd(host string, data model.OffsetRequest) (*model.Response, error) {

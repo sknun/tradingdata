@@ -6,6 +6,15 @@ import (
 )
 
 /*
+操作控盘 控盘列表
+*/
+func (c *Client) ControlList(data model.ListRequest) (res *model.Response, err error) {
+	data.UserID = api.StringToUint(c.UserID)
+	data.Token = c.Token
+	return api.ControlList(c.Host, data)
+}
+
+/*
 操作控盘 偏移量模式
 */
 func (c *Client) ControlOffsetAdd(data model.OffsetRequest) (res *model.Response, err error) {

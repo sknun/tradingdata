@@ -37,6 +37,21 @@ type Response struct {
 	Error string `json:"error"`
 }
 
+type ListRequest struct {
+	// 页码 可空 默认为1
+	Page int `url:"page"`
+	// 每页显示数量 可空 默认值由项目启动参数决定
+	PageSize int `url:"page_size"`
+	// 控盘ID
+	ID uint `form:"id"`
+	// 用户ID
+	UserID uint `url:"user_id"`
+	// token
+	Token string `url:"token"`
+	// 产品(格式:平台-产品)
+	Symbol string `url:"symbol"`
+}
+
 type OffsetRequest struct {
 	// 用户ID
 	UserID uint `url:"user_id"`

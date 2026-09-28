@@ -6,6 +6,15 @@ import (
 )
 
 /*
+操作控盘 控盘配置
+*/
+func (c *Client) ControlConfig(data model.ConfigRequest) (res *model.Response, err error) {
+	data.UserID = api.StringToUint(c.UserID)
+	data.Token = c.Token
+	return api.ControlConfig(c.Host, data)
+}
+
+/*
 操作控盘 控盘列表
 */
 func (c *Client) ControlList(data model.ListRequest) (res *model.Response, err error) {

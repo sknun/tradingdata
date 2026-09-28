@@ -36,6 +36,13 @@ type BaseKlineResponse struct {
 }
 
 /*
+操作控盘 控盘配置
+*/
+func ControlConfig(host string, data model.ConfigRequest) (*model.Response, error) {
+	return doGetRequest(host, "/api/control/config", data)
+}
+
+/*
 操作控盘 控盘列表
 */
 func ControlList(host string, data model.ListRequest) (*model.Response, error) {

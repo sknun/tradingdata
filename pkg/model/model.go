@@ -37,6 +37,13 @@ type Response struct {
 	Error string `json:"error"`
 }
 
+type ConfigRequest struct {
+	// 用户ID
+	UserID uint `url:"user_id"`
+	// token
+	Token string `url:"token"`
+}
+
 type ListRequest struct {
 	// 页码 可空 默认为1
 	Page int `url:"page"`

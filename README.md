@@ -1,92 +1,143 @@
-# 数据中心客户端程序
+# tradingdata Go SDK
 
-### git@cyr.slmail.me
+用于查询历史K线、接收实时K线与盘口，以及调用控盘接口。需要 Go 1.25.1 或更高版本。
 
-## 使用示例
+## 安装
+
+```bash
+go get github.com/sknun/tradingdata
+```
+
+## 接收实时行情
+
+准备服务地址、用户ID、用户token、订阅产品，以及用于接收行情的公网IP或域名、端口和接收token。接收端口需要允许数据服务访问；使用端口映射时，外部端口应与SDK监听端口一致。
 
 ```go
-// 初始化客户端
-client, err := NewClient(host, userID, token, grpcAddr, grpcPort, grpcToken, symbols, heartbeatTimeout, checkInterval, klineChanSize, obChanSize)
-if err != nil {
-    return fmt.Errorf("Client 初始化失败: %w", err)
-}
+package main
 
-// 注入日志函数 func printLog(l string) { log.Println(l) }
-client.SetLogger(printLog)
+import (
+    "log"
 
-// 获取k线
-client.HistoryKline()
+    "github.com/sknun/tradingdata"
+)
 
-// 批量获取k线
-client.HistoryKlineBatch()
+func main() {
+    client, err := tradingdata.NewClient(
+        "https://api.example.com", // 服务地址
+        "1",                       // 用户ID
+        "YOUR_USER_TOKEN",         // 用户token
+        "203.0.113.10",            // 客户程序可被访问的IP或域名，不带协议和端口
+        "51015",                   // 接收端口
+        "YOUR_RECEIVER_TOKEN",     // 自定义接收token
+        "al-BTCUSDT,al-ETHUSDT",    // 平台-产品标识，多个用英文逗号分隔
+        60,                        // 心跳超时，秒
+        30,                        // 检查间隔，秒
+        1000,                      // K线接收缓冲数量
+        1000,                      // 盘口接收缓冲数量
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    client.SetLogger(func(message string) { log.Print(message) })
 
-// 获取并循环读取实时数据通道
-for v := range client.GetKlineChan() {}
-for v := range client.GetObChan() {}
+    go func() {
+        for kline := range client.GetKlineChan() {
+            // 在这里处理实时K线。
+            _ = kline
+        }
+    }()
+    go func() {
+        for orderBook := range client.GetObChan() {
+            // 在这里处理实时盘口。
+            _ = orderBook
+        }
+    }()
 
-// 启动实时数据获取
-err = client.Run()
-if err != nil {
-    return fmt.Errorf("启动grpc失败: %w", err)
+    // Run启动接收服务并持续阻塞，应在独立进程或协程中运行。
+    if err := client.Run(); err != nil {
+        log.Fatal(err)
+    }
 }
 ```
 
-## gRPC断连诊断
+每个进程只初始化一个客户端，`Run`只启动一次。心跳超时为60–1800秒，检查间隔为30–900秒，超时时间至少是检查间隔的两倍。
 
-客户程序必须通过 `client.SetLogger(...)` 将SDK日志保存到自己的gRPC接收日志实例；默认回调不输出，不能仅更新SDK却不接入日志。新增诊断日志为JSON，`level`只使用info/error，仍兼容现有 `func(string)` 回调，不引入新日志依赖。
+K线和盘口通道需要持续消费；缓冲满时会丢弃新行情并记录日志，不补发。`SetLogger`接入客户自己的日志系统，未设置时不输出SDK日志。
 
-- 新版dist通过metadata传入 `connection_id`、`stream_id`、`userID`，SDK日志原样记录；`sdk_instance`区分SDK进程，`transport_id`关联同一物理连接上的RPC。metadata仅用于诊断，不改变鉴权或行情格式。
-- 记录服务启动、传输连接建立/结束、鉴权拒绝、每条流开始/首帧/结束、心跳超时与向core重新登记的结果。正常心跳和行情不逐条打印。
-- 流结束包含最后接收时间、消息类型、产品、序号、接收数、成功入SDK通道数及丢弃数；入通道不等于客户业务已消费。满通道的重复错误最多每流每10秒一次，结束时给出准确累计数。
-- `peer_half_closed`表示接收到了对端的流结束；`recv_failed`记录原始gRPC状态及context错误；发生接收处理panic时先记录再重新panic，保持原行为。传输连接结束本身不说明是谁主动关闭，需结合流记录和dist关闭原因。
-- 心跳超时日志保留最后一次成功心跳的连接ID；登记请求返回成功仅表示core接口应答，不代表dist已连接。SDK服务重启看新的 `sdk_instance`；SIGKILL、断电等无机会写日志的退出需要宿主机或容器记录，不能当作已证明的网络故障。
+## 历史K线
 
-跨端排查先匹配ID，再看本端关闭原因、SDK接收错误和最后消息；不要只凭两台机器日志的先后时间判断因果。两端时钟应同步。
-
-本地离线验证：`go test -race ./... -run '^TestDiagnostic'`。现有 `TestClient_*` 是需要外部配置的调用示例，本命令不执行这些示例。
-
-## HTTP接口返回类型
-
-供调用方使用的HTTP方法保留core的 `code、data、message、error`。网络、超时、参数编码或JSON解析失败时返回Go `error`；core的业务失败码不转换为Go错误，由调用方判断。
-
-| 方法 | 返回值 |
-| --- | --- |
-| HistoryKline | `(*model.BaseKlineResponse, error)` |
-| HistoryKlineBatch | `(*model.BaseKlineBatchResponse, error)` |
-| ControlConfig | `(*model.BaseControlConfigResponse, error)` |
-| ControlList | `(*model.BaseControlListResponse, error)` |
-| ControlDrawCreate | `(*model.BaseCreateDrawResponse, error)` |
-| ControlOffsetAdd、ControlFixedAdd、ControlDrawAdd、ControlOver、ControlDelete | `(*model.Response, error)` |
-
-`ConnectGrpc`仅用于SDK内部登记，保留原来的error返回和业务码判断，不向调用方提供响应。
-
-返回类型均在 `pkg/model/model.go`。有固定数据格式的接口通过 `res.Data` 访问明确类型；无固定数据格式的操作以 `json.RawMessage` 保留core的原始data。
+以下示例使用已初始化的client：
 
 ```go
-res, err := client.ControlDrawCreate(request)
+res, err := client.HistoryKline("al-BTCUSDT", 0, 100, "1m")
 if err != nil {
     // 请求或解析失败。
-    return err
+    log.Print(err)
+    return
 }
-// res.Code、res.Message、res.Error均保留core返回值。
-// 调用方自行判断res.Code；成功且res.Data非nil时可访问res.Data.ID、res.Data.List。
+if res.Code != 200 {
+    // 服务返回业务失败，查看Message和Error。
+    log.Print(res.Message, ": ", res.Error)
+    return
+}
+if res.Data != nil {
+    for _, item := range res.Data.List {
+        // item包含时间、开高低收、成交量和成交额。
+        _ = item
+    }
+    // 下一页查询使用res.Data.NextTimestamp作为截止时间。
+}
 ```
 
-调用方可以直接将res作为HTTP响应返回。Swagger按完整响应类型声明：
+批量查询：
+
+```go
+res, err := client.HistoryKlineBatch("al-BTCUSDT,al-ETHUSDT", 0, 100, "1m")
+```
+
+截止时间使用秒级时间戳，0表示最新数据；数量为1–200。支持周期：`1m、5m、15m、30m、1h、4h、D、W、M`。批量结果的`res.Data`为切片指针，每项包含平台、产品和K线列表。
+
+## 控盘接口
+
+请求和返回类型均位于 `github.com/sknun/tradingdata/pkg/model`。请求中的用户ID和token由客户端自动填写。
+
+| 方法 | 请求类型 | 返回类型 |
+| --- | --- | --- |
+| ControlConfig | ConfigRequest | BaseControlConfigResponse |
+| ControlList | ListRequest | BaseControlListResponse |
+| ControlOffsetAdd | OffsetRequest | Response |
+| ControlFixedAdd | FixedRequest | Response |
+| ControlDrawCreate | CreateDrawRequest | BaseCreateDrawResponse |
+| ControlDrawAdd | DrawRequest | Response |
+| ControlOver | OverRequest | Response |
+| ControlDelete | DeleteRequest | Response |
+
+以上方法均返回`(*返回类型, error)`。例如：
+
+```go
+res, err := client.ControlList(model.ListRequest{
+    Symbol:   "al-BTCUSDT",
+    Page:     1,
+    PageSize: 20,
+})
+```
+
+请求字段的含义和可选条件见model中的注释。控盘请求的时间及阶段时长使用秒；控盘列表返回的时间及阶段时长使用毫秒，金额使用字符串保留精度。结束、删除接口返回成功表示操作已受理，后续处理可能尚未完成。
+
+## 返回值与Swagger
+
+所有查询和控盘方法保留服务返回的`Code、Data、Message、Error`。Go `error`表示请求或解析失败；业务是否成功需判断`res.Code == 200`。有固定格式的数据可通过`res.Data`直接访问。
+
+客户HTTP接口可以直接返回res，Swagger引用SDK公开类型即可。例如历史K线接口：
 
 ```go
 import sdkmodel "github.com/sknun/tradingdata/pkg/model"
 
-// 控盘列表接口：
-// @Success 200 {object} sdkmodel.BaseControlListResponse
-
-// 生成画线接口：
-// @Success 200 {object} sdkmodel.BaseCreateDrawResponse
-
-// 历史K线接口：
 // @Success 200 {object} sdkmodel.BaseKlineResponse
 ```
 
-生成文档时使用 `swag init --parseDependency`。若调用方只转发res.Data并使用自己的响应外壳，再写 `resp.Response{data=sdkmodel.KlineResponse}`。
+生成文档时启用依赖解析：
 
-控盘金额字段使用字符串保留精度。控盘列表的开始／结束时间和阶段时长为毫秒；提交参数仍按请求字段注释使用秒。core结束／删除应答成功不代表dist已完成后续清理。
+```bash
+swag init --parseDependency
+```

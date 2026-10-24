@@ -1,0 +1,81 @@
+syntax = "proto3";
+package grpcproto_service;
+import "google/protobuf/empty.proto";
+option go_package = "./;grpcproto"; 
+
+// 推送服务
+service Service {
+    rpc PushData (stream Request) returns (google.protobuf.Empty);
+    rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+// K线
+message Kline {
+    uint64 seq              = 1; // 递增序列
+    string plat             = 2; // 交易产品平台代码
+    string symbol           = 3; // 交易产品代码
+    int64 control_type      = 4; // 控盘类型 0 未控盘 1 偏移量瞬变 2 偏移量渐变 3 大盘值瞬变 4 大盘值渐变 5 画线
+    int64 control_step      = 5; // 控盘阶段 0 未控盘 1 爬升期 2 峰值期 3 回落期
+    uint64 control_id       = 6; // 控盘ID
+    double real_price       = 7; // 真实价格
+    double ctrl_price       = 8; // 控盘价格
+    double start_offset     = 9; // 开始偏移量
+    double end_offset       = 10; // 结束偏移量
+    double cur_offset       = 11; // 当前偏移量
+    double start_fixed      = 12; // 开始大盘值
+    double end_fixed        = 13; // 结束大盘值
+    double cur_fixed        = 14; // 当前大盘值
+    repeated KlineData data = 15; // k线周期 [1m 5m 15m 30m 1h 4h D W M]
+    int64 rdtime = 16;
+	int64 sdtime = 17;
+	int64 rstime = 18;
+	int64 sstime = 19;
+    int64 wctime = 20;
+}
+
+message KlineData {
+    string interval = 1; // 周期
+    int64  time     = 2; // K线时间
+    double open     = 3; // 开盘价格
+    double close    = 4; // 收盘价格
+    double high     = 5; // 最高价格
+    double low      = 6; // 最低价格
+    double volume   = 7; // 交易量
+    double turnover = 8; // 交易额
+}
+
+// 盘口
+message OrderBookLevel {
+    double price  = 1; // 挂盘价格
+    double volume = 2; // 挂盘量
+}
+
+message OrderBook {
+    uint64 seq    = 1; // 递增序列
+    string plat   = 2; // 交易产品平台代码
+    string symbol = 3; // 交易产品代码
+    int64  time   = 4; // 毫秒
+    repeated OrderBookLevel bids = 5; // 买盘
+    repeated OrderBookLevel asks = 6; // 卖盘
+    int64 rdtime = 7;
+	int64 sdtime = 8;
+	int64 rstime = 9;
+	int64 sstime = 10;
+    int64 wctime = 11;
+}
+
+// 下发请求
+message Request {
+    oneof payload {
+        Kline     kline     = 1;
+        OrderBook ob        = 2;
+    }
+}
+
+message HeartbeatRequest {
+    int64 client_time = 1; // 客户端发起时间戳 秒单位
+}
+
+message HeartbeatResponse {
+    int64 server_time = 1; // 服务端应答时间戳 秒单位
+}
